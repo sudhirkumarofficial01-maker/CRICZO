@@ -24,6 +24,9 @@ jobs:
       - name: Flutter Version
         run: flutter --version
 
+      - name: Create Android Project
+        run: flutter create --platforms=android --project-name criczo .
+
       - name: Get Dependencies
         run: flutter pub get
 
