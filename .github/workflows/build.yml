@@ -30,7 +30,7 @@ jobs:
       - name: Get Dependencies
         run: flutter pub get
 
-      - name: Generate App Icon
+      - name: Generate Android App Icon
         run: dart run flutter_launcher_icons
 
       - name: Analyze
