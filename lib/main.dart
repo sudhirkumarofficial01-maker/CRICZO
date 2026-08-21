@@ -15,7 +15,6 @@ class CriczoApp extends StatelessWidget {
       title: 'CRICZO',
       theme: ThemeData(
         useMaterial3: true,
-        fontFamily: 'Arial',
         scaffoldBackgroundColor: const Color(0xFF031E13),
       ),
       home: const CriczoGame(),
@@ -32,7 +31,7 @@ class CriczoGame extends StatefulWidget {
 
 class _CriczoGameState extends State<CriczoGame>
     with SingleTickerProviderStateMixin {
-  final Random _random = Random();
+  final Random random = Random();
 
   int score = 0;
   int balls = 0;
@@ -45,24 +44,23 @@ class _CriczoGameState extends State<CriczoGame>
   String message = 'CHOOSE YOUR SHOT!';
   String resultText = '';
   bool gameOver = false;
-  bool lastWasSix = false;
   int? selectedShot;
 
-  late AnimationController _ballController;
+  late AnimationController ballController;
 
   @override
   void initState() {
     super.initState();
 
-    _ballController = AnimationController(
+    ballController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 550),
     );
   }
 
   @override
   void dispose() {
-    _ballController.dispose();
+    ballController.dispose();
     super.dispose();
   }
 
@@ -74,28 +72,24 @@ class _CriczoGameState extends State<CriczoGame>
       balls++;
     });
 
-    _ballController.forward(from: 0);
+    ballController.forward(from: 0);
 
-    // Cricket challenge logic.
-    // Approximately 1 in 6 balls becomes a wicket.
-    final bool wicket = _random.nextInt(6) == 0;
-
-    Future.delayed(const Duration(milliseconds: 350), () {
+    Future.delayed(const Duration(milliseconds: 400), () {
       if (!mounted) return;
+
+      final bool wicket = random.nextInt(6) == 0;
 
       setState(() {
         if (wicket) {
           wickets++;
           message = 'OUT! 😱';
-          lastWasSix = false;
         } else {
           score += shot;
-          lastWasSix = shot == 6;
 
           if (shot == 6) {
-            message = 'SIX! 🔥';
+            message = 'SIX! 🔥🔥';
           } else if (shot == 4) {
-            message = 'FOUR! 🏏';
+            message = 'FOUR! 🏏🔥';
           } else {
             message = '+$shot RUN';
           }
@@ -113,22 +107,22 @@ class _CriczoGameState extends State<CriczoGame>
   }
 
   void finishGame(bool won) {
-    Future.delayed(const Duration(milliseconds: 250), () {
+    Future.delayed(const Duration(milliseconds: 300), () {
       if (!mounted) return;
 
       setState(() {
         gameOver = true;
         resultText = won ? 'YOU WIN! 🏆' : 'MATCH OVER';
         message = won
-            ? 'Target completed!'
-            : 'Try again and beat $target runs!';
+            ? 'TARGET COMPLETED!'
+            : 'TRY AGAIN TO BEAT $target RUNS';
       });
 
-      _showResultDialog(won);
+      showResult(won);
     });
   }
 
-  void _showResultDialog(bool won) {
+  void showResult(bool won) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -136,22 +130,22 @@ class _CriczoGameState extends State<CriczoGame>
         return AlertDialog(
           backgroundColor: const Color(0xFF0B3B28),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(25),
           ),
           title: Column(
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(20),
                 child: Image.asset(
                   'assets/logo.png',
-                  width: 90,
-                  height: 90,
+                  width: 95,
+                  height: 95,
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) {
                     return const Icon(
                       Icons.sports_cricket,
-                      size: 70,
                       color: Colors.white,
+                      size: 75,
                     );
                   },
                 ),
@@ -159,6 +153,7 @@ class _CriczoGameState extends State<CriczoGame>
               const SizedBox(height: 15),
               Text(
                 won ? 'YOU WIN! 🏆' : 'MATCH OVER',
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 26,
@@ -174,16 +169,16 @@ class _CriczoGameState extends State<CriczoGame>
                 '$score / $target',
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 42,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 45,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Balls: $balls/$maxBalls\nWickets: $wickets/$maxWickets',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.75),
+                style: const TextStyle(
+                  color: Colors.white70,
                   fontSize: 16,
                   height: 1.5,
                 ),
@@ -226,7 +221,6 @@ class _CriczoGameState extends State<CriczoGame>
       resultText = '';
       gameOver = false;
       selectedShot = null;
-      lastWasSix = false;
     });
   }
 
@@ -249,21 +243,21 @@ class _CriczoGameState extends State<CriczoGame>
           ),
           child: Column(
             children: [
-              _buildHeader(),
+              buildHeader(),
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.fromLTRB(18, 8, 18, 25),
                   child: Column(
                     children: [
-                      _buildScoreCard(progress),
+                      buildScoreCard(progress),
                       const SizedBox(height: 18),
-                      _buildCricketGround(),
+                      buildGround(),
                       const SizedBox(height: 18),
-                      _buildMessage(),
+                      buildMessage(),
                       const SizedBox(height: 18),
-                      _buildShotButtons(),
+                      buildShots(),
                       const SizedBox(height: 18),
-                      _buildStatusButton(),
+                      buildStatus(),
                     ],
                   ),
                 ),
@@ -275,7 +269,7 @@ class _CriczoGameState extends State<CriczoGame>
     );
   }
 
-  Widget _buildHeader() {
+  Widget buildHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 14, 18, 8),
       child: Row(
@@ -326,7 +320,6 @@ class _CriczoGameState extends State<CriczoGame>
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 14,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -345,7 +338,7 @@ class _CriczoGameState extends State<CriczoGame>
     );
   }
 
-  Widget _buildScoreCard(double progress) {
+  Widget buildScoreCard(double progress) {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
       decoration: BoxDecoration(
@@ -354,13 +347,6 @@ class _CriczoGameState extends State<CriczoGame>
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.12),
         ),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black38,
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
       ),
       child: Column(
         children: [
@@ -397,9 +383,9 @@ class _CriczoGameState extends State<CriczoGame>
           const SizedBox(height: 18),
           Row(
             children: [
-              _stat('BALLS', '$balls/$maxBalls'),
-              _stat('TARGET', '$target'),
-              _stat('WICKETS', '$wickets/$maxWickets'),
+              stat('BALLS', '$balls/$maxBalls'),
+              stat('TARGET', '$target'),
+              stat('WICKETS', '$wickets/$maxWickets'),
             ],
           ),
         ],
@@ -407,7 +393,7 @@ class _CriczoGameState extends State<CriczoGame>
     );
   }
 
-  Widget _stat(String title, String value) {
+  Widget stat(String title, String value) {
     return Expanded(
       child: Column(
         children: [
@@ -417,7 +403,6 @@ class _CriczoGameState extends State<CriczoGame>
               color: Colors.white54,
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              letterSpacing: 1,
             ),
           ),
           const SizedBox(height: 4),
@@ -434,16 +419,13 @@ class _CriczoGameState extends State<CriczoGame>
     );
   }
 
-  Widget _buildCricketGround() {
+  Widget buildGround() {
     return Container(
       height: 300,
       width: double.infinity,
       decoration: BoxDecoration(
         color: const Color(0xFF07512E),
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.06),
-        ),
         boxShadow: const [
           BoxShadow(
             color: Colors.black38,
@@ -468,7 +450,6 @@ class _CriczoGameState extends State<CriczoGame>
             ),
           ),
 
-          // Pitch
           Positioned(
             bottom: 18,
             top: 25,
@@ -481,7 +462,6 @@ class _CriczoGameState extends State<CriczoGame>
             ),
           ),
 
-          // Stumps
           Positioned(
             top: 55,
             child: Column(
@@ -489,9 +469,9 @@ class _CriczoGameState extends State<CriczoGame>
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _stump(),
-                    _stump(),
-                    _stump(),
+                    stump(),
+                    stump(),
+                    stump(),
                   ],
                 ),
                 Container(
@@ -506,11 +486,12 @@ class _CriczoGameState extends State<CriczoGame>
             ),
           ),
 
-          // Cricket ball
           AnimatedBuilder(
-            animation: _ballController,
+            animation: ballController,
             builder: (context, child) {
-              final value = Curves.easeOut.transform(_ballController.value);
+              final value =
+                  Curves.easeOut.transform(ballController.value);
+
               return Positioned(
                 bottom: 45 + (value * 115),
                 child: Transform.rotate(
@@ -524,25 +505,6 @@ class _CriczoGameState extends State<CriczoGame>
               style: TextStyle(fontSize: 54),
             ),
           ),
-
-          if (lastWasSix)
-            const Positioned(
-              top: 125,
-              child: Text(
-                '🔥 SIX! 🔥',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black54,
-                      blurRadius: 8,
-                    ),
-                  ],
-                ),
-              ),
-            ),
 
           Positioned(
             bottom: 32,
@@ -572,7 +534,7 @@ class _CriczoGameState extends State<CriczoGame>
     );
   }
 
-  Widget _stump() {
+  Widget stump() {
     return Container(
       width: 6,
       height: 40,
@@ -584,7 +546,7 @@ class _CriczoGameState extends State<CriczoGame>
     );
   }
 
-  Widget _buildMessage() {
+  Widget buildMessage() {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
       width: double.infinity,
@@ -595,30 +557,28 @@ class _CriczoGameState extends State<CriczoGame>
       decoration: BoxDecoration(
         color: const Color(0xFF173B2B),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.05),
-        ),
       ),
       child: Text(
         message,
         textAlign: TextAlign.center,
         style: TextStyle(
-          color: message.contains('SIX') || message.contains('FOUR')
+          color: message.contains('SIX') ||
+                  message.contains('FOUR')
               ? const Color(0xFFFFD54F)
               : Colors.white,
-          fontSize: 24,
+          fontSize: 23,
           fontWeight: FontWeight.w900,
         ),
       ),
     );
   }
 
-  Widget _buildShotButtons() {
+  Widget buildShots() {
     final shots = [
-      {'runs': 1, 'label': 'RUN'},
-      {'runs': 2, 'label': 'RUNS'},
-      {'runs': 4, 'label': 'FOUR'},
-      {'runs': 6, 'label': 'SIX'},
+      [1, 'RUN'],
+      [2, 'RUNS'],
+      [4, 'FOUR'],
+      [6, 'SIX'],
     ];
 
     return Column(
@@ -638,8 +598,8 @@ class _CriczoGameState extends State<CriczoGame>
         ),
         Row(
           children: shots.map((item) {
-            final int runs = item['runs'] as int;
-            final String label = item['label'] as String;
+            final int runs = item[0];
+            final String label = item[1];
 
             final bool selected = selectedShot == runs;
 
@@ -662,15 +622,6 @@ class _CriczoGameState extends State<CriczoGame>
                             : Colors.white.withValues(alpha: 0.08),
                         width: selected ? 2 : 1,
                       ),
-                      boxShadow: selected
-                          ? const [
-                              BoxShadow(
-                                color: Colors.black38,
-                                blurRadius: 12,
-                                offset: Offset(0, 5),
-                              ),
-                            ]
-                          : null,
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -703,7 +654,7 @@ class _CriczoGameState extends State<CriczoGame>
     );
   }
 
-  Widget _buildStatusButton() {
+  Widget buildStatus() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 18),
@@ -720,7 +671,6 @@ class _CriczoGameState extends State<CriczoGame>
           color: gameOver ? Colors.white : Colors.white54,
           fontSize: 18,
           fontWeight: FontWeight.w800,
-          letterSpacing: 0.5,
         ),
       ),
     );
